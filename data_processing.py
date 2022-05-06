@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Dict
 import pytz
 import spacy 
 import logging
@@ -24,15 +25,15 @@ if not os.path.exists('json_files/ingestion'):
 with open(f'json_files/ingestion/{file_name}') as json_file:
     repo_json = json.load(json_file)
 
-def get_license(repo):
+def get_license(repo) -> str:
     if repo.get("license") is None:
         return "no license"
     return repo.get("license").get("key") 
 
-def fix_date(date: str):
+def fix_date(date: str) -> datetime:
     return datetime.fromisoformat(date.replace("Z","+00:00"))
 
-def get_activity(repo, days_range=30):
+def get_activity(repo:Dict, days_range:int=30) -> int:
     if len(repo["pulls"]) == 0:
         return 0
     tz_utc = pytz.timezone("UTC")
@@ -45,7 +46,7 @@ def get_activity(repo, days_range=30):
                 or updated_at > initial_date ]
 
     return len(pr_list)
-def word_frequency_counter(word_to_find:str, phrase: str):
+def word_frequency_counter(word_to_find:str, phrase: str) -> int:
     if phrase is None:
         return 0
     doc = nlp(phrase)
@@ -54,7 +55,7 @@ def word_frequency_counter(word_to_find:str, phrase: str):
 
     return 1 if word_freq else 0
 
-def get_security(repo):
+def get_security(repo:Dict) -> int:
     if len(repo["pulls"]) == 0:
         return 0
     repo_pulls= repo["pulls"]
@@ -64,7 +65,7 @@ def get_security(repo):
             frequency += word_frequency_counter("security",pull['body'])
     return frequency
 
-def get_updated(repo):
+def get_updated(repo:Dict) -> int:
     if len(repo["pulls"]) == 0:
         return 0
     repo_pulls= repo["pulls"]
@@ -74,7 +75,7 @@ def get_updated(repo):
             frequency += word_frequency_counter("bump",pull['body'])
     return frequency
 
-def get_engagement(repo, days_range=30):
+def get_engagement(repo:Dict, days_range:int=30) -> int:
     if len(repo["pulls"]) == 0:
         return 0
     tz_utc = pytz.timezone("UTC")
@@ -104,7 +105,7 @@ if not os.path.exists('json_files/processing'):
     logging.info("Creating processing folder")
     os.makedirs('json_files/processing')
 
-with open(f'json_files/processing/heimdall-process-{timestamp}.json', 'w') as outfile:
+with open(f'json_files/processing/heimdall{timestamp}.json', 'w') as outfile:
     json.dump(data_list, outfile)
 
-logging.info(f"Process done! json_files/processing/heimdall-process-{timestamp}.json")
+logging.info(f"Process done! json_files/processing/heimdall{timestamp}.json")

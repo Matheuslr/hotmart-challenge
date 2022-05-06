@@ -4,5 +4,6 @@ services:
   hotmart_challenge:
     container_name: "hotmart_challenge"
     build: .
+    env_file: .env  
     volumes:
-      - .:.
+      - ./json_files:/server/json_files

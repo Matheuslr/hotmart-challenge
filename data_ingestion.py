@@ -9,17 +9,18 @@ import os
 from datetime import datetime
 from bs4 import BeautifulSoup
 
+from settings import settings
+
 
 number_of_repos_per_page = 20
 
 repo_max_size = 50
-url = 'https://gitmostwanted.com/top/stars/solid'
-oauth_key = "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"
-HEADERS={"Authorization": f"token {oauth_key}"}
 
+HEADERS={"Authorization": f"token {settings.oauth_key}"}
+base_dir = os.path.dirname(os.path.realpath(__file__)).join("json_files")
 logging.getLogger().setLevel(logging.INFO)
 
-def get_repos_name(url:str) -> List[Dict]:
+def get_repos_name(url:str) -> List[str]:
     pagination = 1
     repo_url_list = []
 
@@ -33,7 +34,7 @@ def get_repos_name(url:str) -> List[Dict]:
       pagination = pagination + 1
     return repo_url_list
 
-async def get_repos(user_repo_list:List[str], headers:Dict) -> Dict:
+async def get_repos(user_repo_list:List[str], headers:Dict) -> List[Dict]:
   repo_result=[]
   repo_list = []
 
@@ -43,7 +44,7 @@ async def get_repos(user_repo_list:List[str], headers:Dict) -> Dict:
         try:
           repo_response = await client.get(f'https://api.github.com/repos/{url}',headers=headers )
           repo_result = repo_response.json()
-        
+
           pr_request = await client.get(repo_result["pulls_url"].replace("{/number}", ""), headers=headers)
           pr_result = pr_request.json()
           
@@ -58,7 +59,7 @@ async def get_repos(user_repo_list:List[str], headers:Dict) -> Dict:
 
 logging.info("Inicializing data ingestion!")
 
-repo_url_list = get_repos_name(url)
+repo_url_list = get_repos_name(settings.url)
 
 user_repo_list = [item.replace('https://github.com/', '') for item in repo_url_list]
 
@@ -77,4 +78,4 @@ if not os.path.exists('json_files/ingestion'):
     os.makedirs('json_files/ingestion')
 with open(f'json_files/ingestion/heimdall-{timestamp}.json', 'w') as outfile:
     json.dump(repo_list, outfile)
-logging.info(f"File saved on json_files/ingestion/heimdall-ingestion-{timestamp}.json")
+logging.info(f"File saved on json_files/ingestion/heimdall-{timestamp}.json")

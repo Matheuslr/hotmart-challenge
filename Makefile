@@ -24,14 +24,24 @@ export-requirements: _base-pip
 
 dependencies: _base-pip  ## Install dependencies
 	@pip install -r requirements.txt --upgrade pip
+
+copy-envs:  ## Copy `.env.example` to `.env`
+	@cp -n .env.example .env
+
 ###
 # Docker section
 ###
 build:  ## Docker: Initialize project
 	docker-compose build
 
+run-bash:  ## Docker: Get bash from container
+	docker-compose run --rm hotmart_challenge bash
+
 ingest: ## Docker: Run the ingestion script
-	docker-compose run --service-ports --rm api bash -c "python data_ingestion.py"
+	docker-compose run --rm hotmart_challenge bash -c "python data_ingestion.py"
+
+test: ## Docker: Run the ingestion script
+	docker-compose run --rm hotmart_challenge bash -c "python test.py"
 
 process: ## Docker: Run the processing script
-	docker-compose run --service-ports --rm api bash -c "python data_processing -f $(f)"
+	docker-compose run --rm hotmart_challenge bash -c "python data_processing.py ${f}"

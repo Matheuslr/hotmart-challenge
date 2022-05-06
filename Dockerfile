@@ -9,10 +9,15 @@ RUN apt-get update && apt-get install gcc g++ make curl jq -y \
     pip install -U pip setuptools wheel
 
 COPY . /server/
+
 WORKDIR /server
+RUN make copy-envs
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+
+RUN pip install --no-cache-dir -r requirements.txt && \
+    apt-get clean
 
 RUN usermod -u 1000 www-data
 RUN usermod -G staff www-data

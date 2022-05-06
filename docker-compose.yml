@@ -1,0 +1,8 @@
+version: "3.7"
+
+services:
+  hotmart_challenge:
+    container_name: "hotmart_challenge"
+    build: .
+    volumes:
+      - .:.
